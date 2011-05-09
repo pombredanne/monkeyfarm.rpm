@@ -8,8 +8,8 @@ Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
 License:        Undetermined
-URL:            https://redmine.rackspace.com/projects/monkeyfarm
-Source0:        http://10.6.210.161/mf/releases/%{name}-%{version}.tar.gz
+URL:            http://buildenv.com
+Source0:        http://buildenv.com/downloads/%{name}/%{name}-%{version}.tar.gz 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 

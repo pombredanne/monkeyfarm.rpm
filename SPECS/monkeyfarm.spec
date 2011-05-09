@@ -101,7 +101,7 @@ MonkeyFarm Generic Build Handler Plugin
 Summary:        MonkeyFarm RPM Build Handler Plugin
 Group:          Applications/System
 Requires:       %{name}-core = %{version}-%{release}
-Requires:       rpm, rpmdevtools, createrepo
+Requires:       rpm, rpmdevtools, createrepo, mock
 
 %description plugin-rpm
 MonkeyFarm RPM Build Handler Plugin

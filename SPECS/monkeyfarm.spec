@@ -2,14 +2,14 @@
 %{!?pyver: %global pyver %(%{__python} -c "import sys ; print sys.version[:3]")}
 
 Name:           monkeyfarm
-Version:        2.0.3.2  
-Release:        1.alpha%{?dist}
+Version:        2.0.3.1
+Release:        1.8.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
 License:        Undetermined
 URL:            http://buildenv.com
-Source0:        http://buildenv.com/downloads/%{name}/%{name}-%{version}.tar.gz 
+Source0:        http://mf-hub.rpmdev.rackspace.com/downloads/%{name}/%{name}-%{version}.tar.gz 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
@@ -504,9 +504,6 @@ fi
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
-* Mon May 09 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.2.alpha
-- Latest dev sources
-
 * Wed Apr 20 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.1-1.8.alpha
 - Latest sources
 

@@ -3,7 +3,7 @@
 
 Name:           monkeyfarm
 Version:        2.0.3.1
-Release:        1.8.alpha%{?dist}
+Release:        1.9.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
@@ -504,6 +504,9 @@ fi
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
+* Thu Jun 02 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.1-1.9.alpha
+- Rebuild to include EL6
+
 * Wed Apr 20 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.1-1.8.alpha
 - Latest sources
 

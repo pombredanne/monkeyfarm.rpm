@@ -2,12 +2,12 @@
 %{!?pyver: %global pyver %(%{__python} -c "import sys ; print sys.version[:3]")}
 
 Name:           monkeyfarm
-Version:        2.0.3.1
-Release:        1.9.alpha%{?dist}
+Version:        2.0.4
+Release:        1.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
-License:        Undetermined
+License:        GPLv2 
 URL:            http://buildenv.com
 Source0:        http://mf-hub.rpmdev.rackspace.com/downloads/%{name}/%{name}-%{version}.tar.gz 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -82,6 +82,7 @@ MonkeyFarm Web/API Hub Application
 %package -n python-%{name}-interface
 Summary:        MonkeyFarm API Bindings for Python
 Group:          Development/Languages
+License:        BSD
 # this is a stand-alone client library, and does not (should not) 
 # require the base package
 Requires:       python, python-zope-interface
@@ -137,25 +138,25 @@ MonkeyFarm LaunchPad Build/VCS Handler Plugin
 %prep
 %setup -q
 
-sed -i 's/tag_build = dev/tag_build = /' hub/setup.cfg
+sed -i 's/tag_build = dev/tag_build = /' src/monkeyfarm.hub/setup.cfg
 
 %build
 for i in core client hub regulator worker; do
-    pushd $i
+    pushd src/monkeyfarm.$i
     %{__python} setup.py build
     popd
 done
 
 # plugins
 for i in generic_build git bzr rpm launchpad; do
-    pushd plugins/monkeyfarm.$i
+    pushd src/plugins/monkeyfarm.$i
     %{__python} setup.py build
     popd
 done
 
 # interfaces
 for i in python; do 
-    pushd interfaces/$i/
+    pushd src/interfaces/$i/
     %{__python} setup.py build
     popd
 done
@@ -168,6 +169,7 @@ sphinx-build doc/source doc/build/html
 rm -rf %{buildroot}
 %{__mkdir} -p %{buildroot}%{_sysconfdir}/%{name}/plugins.d/ \
               %{buildroot}%{_sysconfdir}/init.d/ \
+              %{buildroot}%{_sysconfdir}/logrotate.d/ \
               %{buildroot}%{_sysconfdir}/httpd/conf.d/ \
               %{buildroot}%{_localstatedir}/run/%{name}/ \
               %{buildroot}%{_localstatedir}/cache/%{name}/ \
@@ -181,38 +183,39 @@ rm -rf %{buildroot}
 
 
 for i in core client hub regulator worker; do
-    pushd $i
+    pushd src/monkeyfarm.$i
     %{__python} setup.py install --skip-build --root %{buildroot}
     popd
 done
 
 # plugins
 for i in generic_build git bzr rpm launchpad; do
-    pushd plugins/monkeyfarm.$i
+    pushd src/plugins/monkeyfarm.$i
     %{__python} setup.py install --skip-build --root %{buildroot}
     popd
 done
 
 # interfaces
 for i in python; do 
-    pushd interfaces/$i/
+    pushd src/interfaces/$i/
     %{__python} setup.py install --skip-build --root %{buildroot}
     popd
 done
 
 # quick fix for bins that should be sbins
-mv %{buildroot}%{_bindir}/mf-regulator %{buildroot}%{_sbindir}/mf-regulator
-mv %{buildroot}%{_bindir}/mf-worker %{buildroot}%{_sbindir}/mf-worker
+mv %{buildroot}%{_bindir}/mf-regulatord %{buildroot}%{_sbindir}/mf-regulatord
+mv %{buildroot}%{_bindir}/mf-workerd %{buildroot}%{_sbindir}/mf-workerd
 
 # configurations
-%{__install} client/config/mf.conf-minimal %{buildroot}%{_sysconfdir}/%{name}/mf.conf
-%{__install} regulator/config/mf-regulator.conf \
-        %{buildroot}%{_sysconfdir}/%{name}/mf-regulator.conf
-%{__install} worker/config/mf-worker.conf \
-        %{buildroot}%{_sysconfdir}/%{name}/mf-worker.conf
-%{__install} hub/mf-hub.conf-production \
+%{__install} src/monkeyfarm.client/config/mf.conf-minimal \
+        %{buildroot}%{_sysconfdir}/%{name}/mf.conf
+%{__install} src/monkeyfarm.regulator/config/mf-regulatord.conf \
+        %{buildroot}%{_sysconfdir}/%{name}/mf-regulatord.conf
+%{__install} src/monkeyfarm.worker/config/mf-workerd.conf \
+        %{buildroot}%{_sysconfdir}/%{name}/mf-workerd.conf
+%{__install} src/monkeyfarm.hub/mf-hub.conf-production \
         %{buildroot}%{_sysconfdir}/%{name}/mf-hub.conf
-%{__install} hub/TERMS_OF_USE \
+%{__install} src/monkeyfarm.hub/TERMS_OF_USE \
         %{buildroot}%{_sysconfdir}/%{name}/TERMS_OF_USE
 
 
@@ -227,26 +230,32 @@ mv %{buildroot}%{python_sitelib}/mf_hub/public %{buildroot}%{_datadir}/%{name}/h
 ln -sf %{_docdir}/%{name}-doc-%{version}/html %{buildroot}%{_datadir}/%{name}/hub/public/doc
 
 # init scripts
-%{__install} util/mf-regulator.init \
-    %{buildroot}%{_sysconfdir}/init.d/mf-regulator
-%{__install} util/mf-worker.init \
-    %{buildroot}%{_sysconfdir}/init.d/mf-worker
+%{__install} util/mf-regulatord.init \
+    %{buildroot}%{_sysconfdir}/init.d/mf-regulatord
+%{__install} util/mf-workerd.init \
+    %{buildroot}%{_sysconfdir}/init.d/mf-workerd
+
+# logrotate scripts
+%{__install} -m 0644 util/mf-regulatord.logrotate \
+    %{buildroot}%{_sysconfdir}/logrotate.d/mf-regulatord
+%{__install} -m 0644 util/mf-workerd.logrotate \
+    %{buildroot}%{_sysconfdir}/logrotate.d/mf-workerd
 
 # plugin configs
 for i in generic_build git bzr rpm launchpad; do
-    %{__install} plugins/monkeyfarm.${i}/config/plugins.d/${i}.conf \
+    %{__install} src/plugins/monkeyfarm.${i}/config/plugins.d/${i}.conf \
         %{buildroot}%{_sysconfdir}/monkeyfarm/plugins.d/${i}.conf
 done
 
 # rosendale plugins
-%{__install} core/config/plugins.d/simplecache.conf \
+%{__install} src/monkeyfarm.core/config/plugins.d/simplecache.conf \
         %{buildroot}%{_sysconfdir}/%{name}/plugins.d/simplecache.conf
-%{__install} core/config/plugins.d/clibasic.conf \
+%{__install} src/monkeyfarm.core/config/plugins.d/clibasic.conf \
         %{buildroot}%{_sysconfdir}/%{name}/plugins.d/clibasic.conf
 
 # Create %%ghost files
-touch %{buildroot}%{_localstatedir}/run/%{name}/mf-regulator.pid
-touch %{buildroot}%{_localstatedir}/run/%{name}/mf-worker.pid
+touch %{buildroot}%{_localstatedir}/run/%{name}/mf-regulatord.pid
+touch %{buildroot}%{_localstatedir}/run/%{name}/mf-workerd.pid
 
 # cleanup
 rm -f %{buildroot}%{python_sitelib}/mf/model/example*
@@ -267,30 +276,30 @@ exit 0
 
 %post regulator 
 if [ $1 = 1 ]; then
-    /sbin/chkconfig --add mf-regulator
+    /sbin/chkconfig --add mf-regulatord
 fi
 if [ $1 -ge 1 ]; then
-    /sbin/service mf-regulator condrestart || :
+    /sbin/service mf-regulatord condrestart || :
 fi
 
 %post worker 
 if [ $1 = 1 ]; then
-    /sbin/chkconfig --add mf-worker
+    /sbin/chkconfig --add mf-workerd
 fi
 if [ $1 -ge 1 ]; then
-    /sbin/service mf-worker condrestart || :
+    /sbin/service mf-workerd condrestart || :
 fi
 
 %preun regulator
 if [ $1 = 0 ]; then
-    /sbin/service mf-regulator stop || :
-    /sbin/chkconfig --del mf-regulator
+    /sbin/service mf-regulatord stop || :
+    /sbin/chkconfig --del mf-regulatord
 fi
 
 %preun worker 
 if [ $1 = 0 ]; then
-    /sbin/service mf-worker stop || :
-    /sbin/chkconfig --del mf-worker
+    /sbin/service mf-workerd stop || :
+    /sbin/chkconfig --del mf-workerd
 fi
 
 
@@ -316,7 +325,7 @@ fi
 
 %files core
 %defattr(-,root,root,-)
-%doc core/README
+%doc src/monkeyfarm.core/README
 %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/clibasic.conf
 %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/simplecache.conf
 %{python_sitelib}/mf/core/
@@ -343,7 +352,7 @@ fi
 
 %files client 
 %defattr(-,root,root,-)
-%doc client/README
+%doc src/monkeyfarm.client/README
 %{python_sitelib}/mf/lib/client.py*
 %{python_sitelib}/mf/bootstrap/arch.py*
 %{python_sitelib}/mf/bootstrap/distro.py*
@@ -402,7 +411,7 @@ fi
 
 %files hub 
 %defattr(-,root,root,-)
-%doc util/README.rpm hub/README util/monkeyfarm.apache 
+%doc util/README.rpm src/monkeyfarm.hub/README util/monkeyfarm.apache 
 %attr(0640,root,monkeyfarm) %config(noreplace) %{_sysconfdir}/%{name}/mf-hub.conf
 %attr(0644,root,root) %config(noreplace) %{_sysconfdir}/%{name}/TERMS_OF_USE
 %{_datadir}/%{name}/hub/
@@ -411,31 +420,33 @@ fi
 
 %files regulator
 %defattr(-,root,root,-)
-%doc regulator/README
-%attr(0640,root,monkeyfarm) %config(noreplace) %{_sysconfdir}/%{name}/mf-regulator.conf
-%attr(0755,root,root) %{_sysconfdir}/init.d/mf-regulator
-%ghost %attr(644,monkeyfarm,monkeyfarm) %{_localstatedir}/run/%{name}/mf-regulator.pid
+%doc src/monkeyfarm.regulator/README
+%attr(0640,root,monkeyfarm) %config(noreplace) %{_sysconfdir}/%{name}/mf-regulatord.conf
+%attr(0755,root,root) %{_sysconfdir}/init.d/mf-regulatord
+%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/logrotate.d/mf-regulatord
+%ghost %attr(644,monkeyfarm,monkeyfarm) %{_localstatedir}/run/%{name}/mf-regulatord.pid
 %{python_sitelib}/mf/templates/regulator/
 %{python_sitelib}/mf/lib/regulator.py*
 %{python_sitelib}/mf/bootstrap/regulator.py*
 %{python_sitelib}/mf/controllers/regulator.py*
 %{python_sitelib}/%{name}.regulator-%{version}-py%{pyver}-nspkg.pth
 %{python_sitelib}/%{name}.regulator-%{version}-py%{pyver}.egg-info/
-%{_sbindir}/mf-regulator
+%{_sbindir}/mf-regulatord
 
 %files worker
 %defattr(-,root,root,-)
-%doc worker/README
-%attr(0640,root,monkeyfarm) %config(noreplace) %{_sysconfdir}/%{name}/mf-worker.conf
-%attr(0755,root,root) %{_sysconfdir}/init.d/mf-worker
-%ghost %attr(644,monkeyfarm,monkeyfarm) %{_localstatedir}/run/%{name}/mf-worker.pid
+%doc src/monkeyfarm.worker/README
+%attr(0640,root,monkeyfarm) %config(noreplace) %{_sysconfdir}/%{name}/mf-workerd.conf
+%attr(0755,root,root) %{_sysconfdir}/init.d/mf-workerd
+%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/logrotate.d/mf-workerd
+%ghost %attr(644,monkeyfarm,monkeyfarm) %{_localstatedir}/run/%{name}/mf-workerd.pid
 %{python_sitelib}/mf/templates/worker/
 %{python_sitelib}/mf/lib/worker.py*
 %{python_sitelib}/mf/bootstrap/worker.py*
 %{python_sitelib}/mf/controllers/worker.py*
 %{python_sitelib}/%{name}.worker-%{version}-py%{pyver}-nspkg.pth
 %{python_sitelib}/%{name}.worker-%{version}-py%{pyver}.egg-info/
-%{_sbindir}/mf-worker
+%{_sbindir}/mf-workerd
 
 %files doc
 %defattr(-,root,root,-)
@@ -443,7 +454,7 @@ fi
 
 %files plugin-generic-build 
 %defattr(-,root,root,-)
-%doc plugins/monkeyfarm.generic_build/README
+%doc src/plugins/monkeyfarm.generic_build/README
 %attr(0644,-,-) %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/generic_build.conf
 %{python_sitelib}/mf/templates/generic_build/
 %{python_sitelib}/mf/bootstrap/generic_build.py*
@@ -454,7 +465,7 @@ fi
 
 %files plugin-git
 %defattr(-,root,root,-)
-%doc plugins/monkeyfarm.git/README
+%doc src/plugins/monkeyfarm.git/README
 %attr(0644,-,-) %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/git.conf
 %{python_sitelib}/mf/templates/git/
 %{python_sitelib}/mf/bootstrap/git.py*
@@ -465,7 +476,7 @@ fi
 
 %files plugin-bzr
 %defattr(-,root,root,-)
-%doc plugins/monkeyfarm.bzr/README
+%doc src/plugins/monkeyfarm.bzr/README
 %attr(0644,-,-) %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/bzr.conf
 %{python_sitelib}/mf/templates/bzr/
 %{python_sitelib}/mf/bootstrap/bzr.py*
@@ -476,7 +487,7 @@ fi
 
 %files plugin-rpm
 %defattr(-,root,root,-)
-%doc plugins/monkeyfarm.rpm/README
+%doc src/plugins/monkeyfarm.rpm/README
 %attr(0644,-,-) %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/rpm.conf
 %{python_sitelib}/mf/templates/rpm/
 %{python_sitelib}/mf/bootstrap/rpm.py*
@@ -487,7 +498,7 @@ fi
 
 %files plugin-launchpad
 %defattr(-,root,root,-)
-%doc plugins/monkeyfarm.launchpad/README
+%doc src/plugins/monkeyfarm.launchpad/README
 %attr(0644,-,-) %config(noreplace) %{_sysconfdir}/%{name}/plugins.d/launchpad.conf
 %{python_sitelib}/mf/templates/launchpad/
 %{python_sitelib}/mf/bootstrap/launchpad.py*
@@ -499,13 +510,14 @@ fi
 
 %files -n python-%{name}-interface 
 %defattr(-,root,root,-)
-%doc interfaces/python/README interfaces/python/LICENSE
+%doc src/interfaces/python/README src/interfaces/python/LICENSE
 %{python_sitelib}/%{name}/
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
-* Thu Jun 02 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.1-1.9.alpha
-- Rebuild to include EL6
+* Tue Jun 10 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-1.alpha
+- Latest sources
+- Added logrotate scripts
 
 * Wed Apr 20 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.3.1-1.8.alpha
 - Latest sources

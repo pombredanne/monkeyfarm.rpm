@@ -25,7 +25,7 @@ Summary: Documentation for MonkeyFarm
 Group: Documentation
 BuildRequires: python-configobj, python-genshi, python-jinja2
 
-%if %{?el6} 
+%if 0%{?rhel} == 06 
 BuildRequires: python-sphinx10
 %else
 BuildRequires: python-sphinx
@@ -168,8 +168,11 @@ for i in python; do
 done
 
 # build docs
+%if 0%{?rhel} == 06
+sphinx-1.0-build doc/source doc/build/html
+%else
 sphinx-build doc/source doc/build/html 
-
+%endif
 
 %install
 rm -rf %{buildroot}

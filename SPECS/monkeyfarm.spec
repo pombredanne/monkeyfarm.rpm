@@ -3,7 +3,7 @@
 
 Name:           monkeyfarm
 Version:        2.0.4
-Release:        2.alpha%{?dist}
+Release:        3.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
@@ -37,6 +37,7 @@ This package provides the Sphinx documentation for the MonkeyFarm.
 %package core
 Summary:        MonkeyFarm Core CLI Component
 Group:          Applications/System
+BuildRequires:  python-zope-interface
 Requires:       python-%{name}-interface == %{version}
 Requires:       python-cement >= 0.8.11
 Requires:       python-rosendale-simplecache >= 0.2.4 
@@ -524,7 +525,7 @@ fi
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
-* Mon Jun 13 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-2.alpha
+* Mon Jun 13 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-3.alpha
 - BuildRequires: python-sphinx10 on rhel 6
 
 * Tue Jun 10 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-1.alpha

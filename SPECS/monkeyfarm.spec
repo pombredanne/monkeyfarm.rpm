@@ -3,7 +3,7 @@
 
 Name:           monkeyfarm
 Version:        2.0.4
-Release:        1.alpha%{?dist}
+Release:        2.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
@@ -23,7 +23,13 @@ Next Generation Build Environment.
 %package doc
 Summary: Documentation for MonkeyFarm
 Group: Documentation
-BuildRequires: python-configobj, python-genshi, python-jinja2, python-sphinx
+BuildRequires: python-configobj, python-genshi, python-jinja2
+
+%if 0%{?rhel} == 6
+BuildRequires: python-sphinx10
+%else
+BuildRequires: python-sphinx
+%endif
 
 %description doc
 This package provides the Sphinx documentation for the MonkeyFarm. 
@@ -515,6 +521,9 @@ fi
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
+* Mon Jun 13 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-2.alpha
+- BuildRequires: python-sphinx10 on rhel 6
+
 * Tue Jun 10 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-1.alpha
 - Latest sources
 - Added logrotate scripts

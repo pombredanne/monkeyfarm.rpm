@@ -25,7 +25,7 @@ Summary: Documentation for MonkeyFarm
 Group: Documentation
 BuildRequires: python-configobj, python-genshi, python-jinja2
 
-%if 0%{?rhel} == 6
+%if 0%{?rhel} < 7
 BuildRequires: python-sphinx10
 %else
 BuildRequires: python-sphinx

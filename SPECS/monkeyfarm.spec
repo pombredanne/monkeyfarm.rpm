@@ -1,9 +1,8 @@
-
 %{!?pyver: %global pyver %(%{__python} -c "import sys ; print sys.version[:3]")}
 
 Name:           monkeyfarm
-Version:        2.0.4
-Release:        3.alpha%{?dist}
+Version:        2.0.4.2
+Release:        1.alpha%{?dist}
 Summary:        Next Generation Build Environment
 
 Group:          Applications/System        
@@ -525,7 +524,8 @@ fi
 %{python_sitelib}/%{name}.interface-%{version}-py%{pyver}.egg-info/
 
 %changelog
-* Mon Jun 13 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-3.alpha
+* Mon Jun 13 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4.2-1.alpha
+- Latest sources
 - BuildRequires: python-sphinx10 on rhel 6
 
 * Tue Jun 10 2011 BJ Dierkes <wdierkes@rackspace.com> - 2.0.4-1.alpha
